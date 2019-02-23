@@ -108,7 +108,7 @@ the former are more expressive in regards to explain the cause of observations.
 
 ## c) Discrete HMM for pos tagging
 
-The task is to assign a word in a sentence its corresponding pos_tag. As in the previous examples we also create hidden variables to create a generative model.
+The task is to assign a word in a sentence its corresponding pos_tag. The dataset can be download from this link (http://cnts.uia.ac.be/conll2000/chunking/). As in the previous examples we also create hidden variables to create a generative model.
 The hidden variables represent the different pos-tags in our data and the observable variables are the vocabulary extracted from the sentences.
 
 However, in this particular case we can compute directy the transition probabilities of our hidden states and observable states just by counting. This way we don't have to use the EM
