@@ -106,7 +106,7 @@ As classes in the data are skewed we calculate the F1 score in addition to the a
 This is an acceptable result. We must recall that generally generative models (as in this case) perform worse than discriminative models for classification tasks even though
 the former are more expressive in regards to explain the cause of observations. 
 
-## c) Discrete HMM for pos tagging.
+## c) Discrete HMM for pos tagging
 
 The task is to assign a word in a sentence its corresponding pos_tag. As in the previous examples we also create hidden variables to create a generative model.
 The hidden variables represent the different pos-tags in our data and the observable variables are the vocabulary extracted from the sentences.
@@ -129,15 +129,17 @@ After the counting step we have to normalize the matrices.
     B = B / np.sum(B, axis=1, keepdims=True)
     pi = pi / np.sum(pi)
     
-Finally, when we want to get the pos tags related to a observable sequence it is necessary to run the viterby algorithm to get
+When we want to get the pos tags related to a observable sequence it is necessary to run the viterby algorithm to get
 the most probable hidden sequence (see the code for implementation details).
 
-This model yields good results in the test data.
+Finally we can print both the accuracy and f1 scores.
 
     Train accuracy: 1.0
     Test accuracy: 0.928571428571
     Train f1 score: 1.0
     Test f1 score: 0.841666666667
 
+This is a good result. However we must compare it with a logistic regression model and more sophisticated sequence classifiers such
+RNN to have a benchmark for reference.
 
 
