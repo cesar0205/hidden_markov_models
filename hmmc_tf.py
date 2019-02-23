@@ -1,9 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-tfd = tf.contrib.distributions.MultivariateNormalFullCovariance
 MVN = tf.contrib.distributions.MultivariateNormalDiag
-from fake_data import generate_fake_data, get_params, get_small_params
 
 def random_normalized(shape0, shape1):
     X = np.random.random((shape0, shape1))
@@ -22,6 +20,8 @@ class HMMC():
         D = self.D
         T = self.T
         N = self.N
+        tf.reset_default_graph()
+
         x_input = tf.placeholder(dtype=tf.float32, shape=(None, D))
 
         # For the set params function
@@ -156,28 +156,3 @@ class HMMC():
         plt.xlabel("Epoch")
         plt.ylabel("Cost. log2(p)")
         plt.show()
-
-
-def test_fake_data():
-    np.random.seed(128)
-    X = generate_fake_data(100, 100, get_params)
-    tf.reset_default_graph()
-
-    model = HMMC(5, 3)
-    model.fit(X, 10)
-    likelihood = model.get_individual_log_likelihood(X[0])
-    print("Log likelihood of X[0] with fitted model:", likelihood)
-
-    M, D, K, pi, A, R, mu, sigma = get_params()
-    sigma2 = np.zeros((sigma.shape[0], sigma.shape[1], sigma.shape[2]))
-    for m in range(M):
-        for k in range(K):
-            sigma2[m, k] = np.diag(sigma[m, k])
-
-    model.set_params(M, D, K, pi, A, R, mu, sigma2)
-    likelihood = model.get_individual_log_likelihood(X[0])
-    print("Log likelihood of X[0] with real parameters:", likelihood)
-
-
-if __name__ == "__main__":
-    test_fake_data()

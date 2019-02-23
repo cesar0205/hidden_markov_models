@@ -1,4 +1,6 @@
-# hidden_markov_models
+# Hidden Markov Models
+
+## a) Continuous HMM for Gaussian Mixuture
 
 Study case of a Hidden Markov Model for continuous data. The model is created in Tensorflow
 
@@ -60,3 +62,82 @@ We can then use gradient descent or another optimization algorithm to update the
 After the test data is generated, the HMM is trained and the training costs are plotted.
 
 ![Train cost](hdmm_costs.png)
+
+## b) Discrete HMM for text classification
+
+Study case where generative models such as HMMs can be used in conjunction with the Bayes Rule to create a discriminator.
+
+The code for a disrete HMM is similar to the continuous case. However, we can model the matrix B (observations matrix) directly and normalize its entries.
+
+    B = tf.Variable(np.random.rand(self.n_states, self.n_outputs), dtype=tf.float32)
+    B_norm = tf.nn.softmax(B)
+
+We have two files with writings from Edgar Allan Poe and from Robert Fros. The objective is to classify a new sentence to either of the two authors.
+
+If we use the total vocabulary extracted from these files, then the number of outputs will be too large compared to the relatively small data sets and we are likely to overfit to the train set.
+Instead, we will extract the pos_tags using nltk pos_tag function. The output size will be 41.
+
+For each class (author) a different model will be trained and the prior calculated as well.
+
+Finally we can use bayes rule to compute the unnormalized posterior that we can utilize as discriminator to decide the class that corresponds to a given sentence.
+    
+    def predict(self, X):
+            # Calculate the unnormalized posteriors, that will be used as discriminators.
+            un_posteriors = np.zeros((len(X), len(self.classes)))
+            for class_ in self.classes:
+                un_posteriors[:, class_] = self.models[class_].get_multiple_log_likelihood(X) + np.log2(self.priors[class_])
+    
+            return np.argmax(un_posteriors, axis=1)
+
+As classes in the data are skewed we calculate the F1 score in addition to the accuracy score in order to have a better comparitive for the performances on the train and test sets.
+
+    ...
+    Epoch: 46 Train loss: 23202.0368384
+    Epoch: 47 Train loss: 23163.7684468
+    Epoch: 48 Train loss: 23126.3661596
+    Epoch: 49 Train loss: 23089.7905619
+    
+    
+    Train accuracy: 0.735925710969
+    Test accuracy: 0.751740139211
+    Train f1 score: 0.808097849009
+    Test f1 score: 0.818950930626
+    
+This is an acceptable result. We must recall that generally generative models (as in this case) perform worse than discriminative models for classification tasks even though
+the former are more expressive in regards to explain the cause of observations. 
+
+## c) Discrete HMM for pos tagging.
+
+The task is to assign a word in a sentence its corresponding pos_tag. As in the previous examples we also create hidden variables to create a generative model.
+The hidden variables represent the different pos-tags in our data and the observable variables are the vocabulary extracted from the sentences.
+
+However, in this particular case we can compute directy the transition probabilities of our hidden states and observable states just by counting. This way we don't have to use the EM
+algorithm to maximize the the likelihood of the data.
+
+    for tags, sentence in zip(train_tags, train_sentences):
+        pi[tags[0]] += 1
+        for i in range(len(tags) - 1):
+            A[tags[i], tags[i + 1]] += 1
+
+        for i in range(len(sentence)):
+            B[tags[i], sentence[i]] += 1 
+            
+After the counting step we have to normalize the matrices.
+
+    #Normalization step
+    A = A / np.sum(A, axis=1, keepdims=True)
+    B = B / np.sum(B, axis=1, keepdims=True)
+    pi = pi / np.sum(pi)
+    
+Finally, when we want to get the pos tags related to a observable sequence it is necessary to run the viterby algorithm to get
+the most probable hidden sequence (see the code for implementation details).
+
+This model yields good results in the test data.
+
+    Train accuracy: 1.0
+    Test accuracy: 0.928571428571
+    Train f1 score: 1.0
+    Test f1 score: 0.841666666667
+
+
+
